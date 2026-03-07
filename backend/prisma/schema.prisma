@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@localhost:5432/postgres"
+}
+
+model User {
+  id              String         @id @default(uuid())
+  name            String
+  email           String         @unique
+  githubUsername  String?
+  bio             String?
+  reputationScore Int            @default(0)
+  createdAt       DateTime       @default(now())
+  articles        Article[]
+  dashboardLogs   DashboardLog[]
+  projects        Project[]
+}
+
+model Project {
+  id             String            @id @default(uuid())
+  userId         String
+  title          String
+  slug           String            @unique
+  description    String
+  repositoryUrl  String?
+  liveUrl        String?
+  problem        String?
+  solution       String?
+  devProcess     String?
+  results        String?
+  lessonsLearned String?
+  technologies   String[]
+  status         PublicationStatus @default(DRAFT)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  user           User              @relation(fields: [userId], references: [id])
+}
+
+model Article {
+  id          String            @id @default(uuid())
+  userId      String
+  title       String
+  slug        String            @unique
+  content     String
+  summary     String?
+  topic       String?
+  status      PublicationStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime          @default(now())
+  user        User              @relation(fields: [userId], references: [id])
+}
+
+model DashboardLog {
+  id        String   @id @default(uuid())
+  userId    String
+  type      LogType
+  message   String
+  metadata  Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model VisitorSession {
+  id              String   @id @default(uuid())
+  sessionId       String   @unique
+  inferredIntent  String?
+  engagementScore Float    @default(0.0)
+  viewedPaths     String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+  AUTO_GENERATED
+}
+
+enum LogType {
+  OPPORTUNITY
+  SYSTEM_UPDATE
+  AI_TASK
+}
